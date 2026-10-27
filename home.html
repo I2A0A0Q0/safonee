@@ -7,102 +7,401 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="home-page">
-    
-    <!-- الشريط العلوي -->
     <header class="top-bar">
         <div class="logo-small">
-            <span class="logo-icon">◈</span>
+            <span class="logo-icon"></span>
             <h2>Safonee</h2>
         </div>
+        <div class="search-box">
+            <input type="text" placeholder="🔍 ابحث في Safonee...">
+        </div>
         <div class="user-actions">
-            <button class="icon-btn" onclick="window.location.href='index.html'">🚪 خروج</button>
-            <div class="avatar">أ</div>
+            <button class="icon-btn" onclick="alert('لا توجد إشعارات جديدة')">🔔</button>
+            <button class="icon-btn" onclick="alert('لا توجد رسائل جديدة')">💬</button>
+            <div class="avatar" onclick="logout()">أ</div>
         </div>
     </header>
 
     <div class="main-layout">
-        <!-- المحتوى الرئيسي (المنشورات) -->
+        <aside class="sidebar-right">
+            <div class="profile-card">
+                <div class="avatar-large">أ</div>
+                <h3 id="userName">أحمد محمد</h3>
+                <p class="bio">مطور ويب | محب للتقنية</p>
+                <div class="stats">
+                    <div><strong id="postCount">0</strong><span>منشور</span></div>
+                    <div><strong>1.2K</strong><span>متابع</span></div>
+                    <div><strong>890</strong><span>يتابع</span></div>
+                </div>
+            </div>
+            <nav class="menu">
+                <a href="#" class="active">🏠 الرئيسية</a>
+                <a href="#"> الأصدقاء</a>
+                <a href="#">📸 الصور</a>
+                <a href="#">🎥 الفيديو</a>
+                <a href="#">⚙️ الإعدادات</a>
+            </nav>
+        </aside>
+
         <main class="feed">
-            
-            <!-- صندوق إنشاء منشور -->
             <div class="create-post">
                 <div class="avatar-small">أ</div>
-                <input type="text" id="postInput" placeholder="بماذا تفكر الآن؟">
+                <div class="post-input-wrapper">
+                    <input type="text" id="postInput" placeholder="بماذا تفكر الآن؟">
+                    <div class="post-options">
+                        <button class="option-btn" onclick="document.getElementById('imageInput').click()">📷 صورة</button>
+                        <button class="option-btn">😊 إيموجي</button>
+                    </div>
+                    <input type="file" id="imageInput" accept="image/*" style="display:none" onchange="previewImage(event)">
+                    <div id="imagePreview" class="image-preview" style="display:none">
+                        <img id="previewImg" src="" alt="معاينة">
+                        <button class="remove-image" onclick="removeImage()">✕</button>
+                    </div>
+                </div>
                 <button class="btn-post" onclick="createPost()">نشر</button>
             </div>
 
-            <!-- منشور تجريبي 1 -->
-            <article class="post">
-                <div class="post-header">
-                    <div class="avatar-small">س</div>
-                    <div class="post-info">
-                        <h4>سارة العلي</h4>
-                        <span>منذ ساعتين · 🌍</span>
-                    </div>
-                </div>
-                <p class="post-content">يوم رائع للتعلم واكتشاف أشياء جديدة في عالم البرمجة! 💻✨</p>
-                <div class="post-actions">
-                    <button onclick="toggleLike(this)">❤️ إعجاب</button>
-                    <button>💬 تعليق</button>
-                </div>
-            </article>
-
+            <div id="postsContainer"></div>
         </main>
+
+        <aside class="sidebar-left">
+            <div class="widget">
+                <h3>اقتراحات للأصدقاء</h3>
+                <div class="friend-suggestion">
+                    <div class="avatar-small">ل</div>
+                    <div>
+                        <strong>ليلى حسن</strong>
+                        <p>5 أصدقاء مشتركين</p>
+                    </div>
+                    <button class="btn-follow" onclick="toggleFollow(this)">+ متابعة</button>
+                </div>
+                <div class="friend-suggestion">
+                    <div class="avatar-small">ع</div>
+                    <div>
+                        <strong>عمر يوسف</strong>
+                        <p>3 أصدقاء مشتركين</p>
+                    </div>
+                    <button class="btn-follow" onclick="toggleFollow(this)">+ متابعة</button>
+                </div>
+            </div>
+
+            <div class="widget">
+                <h3>الأكثر نشاطاً</h3>
+                <ul class="trending">
+                    <li>#تصميم_ويب</li>
+                    <li>#البرمجة</li>
+                    <li>#Safonee</li>
+                    <li>#تطوير</li>
+                </ul>
+            </div>
+        </aside>
     </div>
 
-    <!-- كود الجافاسكربت مدمج هنا لضمان عمله بدون مشاكل -->
     <script>
-        // دالة إنشاء المنشور
+        let currentImage = null;
+
+        window.onload = function() {
+            loadPosts();
+        };
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage = e.target.result;
+                    document.getElementById('previewImg').src = currentImage;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage() {
+            currentImage = null;
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
         function createPost() {
             var input = document.getElementById('postInput');
             var content = input.value.trim();
             
-            if (content) {
-                var feed = document.querySelector('.feed');
-                var createPostBox = document.querySelector('.create-post');
+            if (content || currentImage) {
+                var posts = JSON.parse(localStorage.getItem('safonee_posts') || '[]');
                 
-                var newPost = document.createElement('article');
-                newPost.className = 'post';
-                newPost.innerHTML = `
-                    <div class="post-header">
-                        <div class="avatar-small">أ</div>
-                        <div class="post-info">
-                            <h4>أنت</h4>
-                            <span>الآن · 🌍</span>
-                        </div>
-                    </div>
-                    <p class="post-content">${content}</p>
-                    <div class="post-actions">
-                        <button onclick="toggleLike(this)">❤️ إعجاب</button>
-                        <button>💬 تعليق</button>
-                    </div>
-                `;
+                var newPost = {
+                    id: Date.now(),
+                    content: content,
+                    image: currentImage,
+                    author: 'أنت',
+                    time: 'الآن',
+                    likes: 0,
+                    liked: false,
+                    comments: []
+                };
                 
-                // إضافة المنشور الجديد تحت صندوق الكتابة مباشرة
-                createPostBox.parentNode.insertBefore(newPost, createPostBox.nextSibling);
-                input.value = ''; // تفريغ الحقل
+                posts.unshift(newPost);
+                localStorage.setItem('safonee_posts', JSON.stringify(posts));
+                
+                input.value = '';
+                removeImage();
+                loadPosts();
             } else {
-                alert('اكتب شيئاً أولاً! ✍️');
+                alert('اكتب شيئاً أو أضف صورة! ✍️');
             }
         }
 
-        // دالة تغيير لون زر الإعجاب
-        function toggleLike(btn) {
-            if (btn.style.background === 'rgb(99, 102, 241)') {
-                btn.style.background = '#f5f5f7';
-                btn.style.color = '#2d2d30';
-                btn.innerHTML = '❤️ إعجاب';
-            } else {
+        function loadPosts() {
+            var posts = JSON.parse(localStorage.getItem('safonee_posts') || '[]');
+            var container = document.getElementById('postsContainer');
+            container.innerHTML = '';
+            
+            if (posts.length === 0) {
+                posts = [
+                    {
+                        id: 1,
+                        content: 'يوم رائع للتعلم واكتشاف أشياء جديدة في عالم البرمجة! 💻✨',
+                        image: null,
+                        author: 'سارة العلي',
+                        time: 'منذ ساعتين',
+                        likes: 5,
+                        liked: false,
+                        comments: []
+                    },
+                    {
+                        id: 2,
+                        content: 'من يريد تعلم تصميم المواقع بلغة HTML و CSS؟ يمكنني مساعدتكم! 🚀',
+                        image: null,
+                        author: 'محمد خالد',
+                        time: 'منذ 5 ساعات',
+                        likes: 12,
+                        liked: false,
+                        comments: []
+                    }
+                ];
+                localStorage.setItem('safonee_posts', JSON.stringify(posts));
+            }
+            
+            posts.forEach(function(post) {
+                var imageHTML = post.image ? `<div class="post-image"><img src="${post.image}" class="post-image-content" onclick="openImage('${post.image}')"></div>` : '';
+                var postHTML = `
+                    <article class="post">
+                        <div class="post-header">
+                            <div class="avatar-small">${post.author.charAt(0)}</div>
+                            <div class="post-info">
+                                <h4>${post.author}</h4>
+                                <span>${post.time} · 🌍</span>
+                            </div>
+                        </div>
+                        <p class="post-content">${post.content}</p>
+                        ${imageHTML}
+                        <div class="comments-section" id="comments-${post.id}">
+                            ${post.comments.map(c => `<div class="comment"><strong>${c.author}:</strong> ${c.text}</div>`).join('')}
+                        </div>
+                        <div class="post-actions">
+                            <button onclick="toggleLike(${post.id})" style="${post.liked ? 'background:#6366f1;color:white;' : ''}">❤️ ${post.liked ? 'أعجبني' : 'إعجاب'} (${post.likes})</button>
+                            <button onclick="toggleComments(${post.id})">💬 تعليق (${post.comments.length})</button>
+                            <button onclick="sharePost(${post.id})">🔗 مشاركة</button>
+                        </div>
+                        <div class="comment-input" id="commentInput-${post.id}" style="display:none;">
+                            <input type="text" placeholder="اكتب تعليقاً..." id="commentText-${post.id}">
+                            <button onclick="addComment(${post.id})">إرسال</button>
+                        </div>
+                    </article>
+                `;
+                container.innerHTML += postHTML;
+            });
+            
+            document.getElementById('postCount').textContent = posts.length;
+        }
+
+        function openImage(src) {
+            var modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.innerHTML = `<span class="close-modal" onclick="this.parentElement.remove()">✕</span><img src="${src}">`;
+            document.body.appendChild(modal);
+        }
+
+        function toggleLike(postId) {
+            var posts = JSON.parse(localStorage.getItem('safonee_posts') || '[]');
+            var post = posts.find(p => p.id === postId);
+            
+            if (post) {
+                post.liked = !post.liked;
+                post.likes += post.liked ? 1 : -1;
+                localStorage.setItem('safonee_posts', JSON.stringify(posts));
+                loadPosts();
+            }
+        }
+
+        function toggleComments(postId) {
+            var commentInput = document.getElementById('commentInput-' + postId);
+            commentInput.style.display = commentInput.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function addComment(postId) {
+            var input = document.getElementById('commentText-' + postId);
+            var text = input.value.trim();
+            
+            if (text) {
+                var posts = JSON.parse(localStorage.getItem('safonee_posts') || '[]');
+                var post = posts.find(p => p.id === postId);
+                
+                if (post) {
+                    post.comments.push({ author: 'أنت', text: text });
+                    localStorage.setItem('safonee_posts', JSON.stringify(posts));
+                    loadPosts();
+                }
+            }
+        }
+
+        function sharePost(postId) {
+            alert('تم نسخ رابط المنشور! 🔗');
+        }
+
+        function toggleFollow(btn) {
+            if (btn.textContent.includes('+')) {
+                btn.textContent = '✓ متابعة';
                 btn.style.background = '#6366f1';
                 btn.style.color = 'white';
-                btn.innerHTML = '❤️ أعجبني';
+            } else {
+                btn.textContent = '+ متابعة';
+                btn.style.background = '#f5f5f7';
+                btn.style.color = '#2d2d30';
+            }
+        }
+
+        function logout() {
+            if (confirm('هل تريد تسجيل الخروج؟')) {
+                sessionStorage.removeItem('loggedIn');
+                window.location.href = 'index.html';
             }
         }
     </script>
-</body><body class="home-page">
-    <script>
-        if (!sessionStorage.getItem('loggedIn')) {
-            window.location.href = 'index.html';
+
+    <style>
+        .post-input-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
-    </script>
+        .post-options {
+            display: flex;
+            gap: 8px;
+        }
+        .option-btn {
+            background: #f5f5f7;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #6366f1;
+            transition: all 0.2s;
+        }
+        .option-btn:hover {
+            background: #e8e8ec;
+        }
+        .image-preview {
+            position: relative;
+            margin-top: 8px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .image-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .remove-image {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .post-image-content {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .post-image-content:hover {
+            transform: scale(1.02);
+        }
+        .image-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+        }
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 12px;
+        }
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .comment {
+            background: #f5f5f7;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+        .comment-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e8e8ec;
+        }
+        .comment-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d1d1d6;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .comment-input button {
+            padding: 8px 16px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+    </style>
+</body>
 </html>
