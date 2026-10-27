@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safonee - الرئيسية</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+    
+    <!-- الشريط العلوي -->
+    <header class="top-bar">
+        <div class="logo-small">
+            <span class="logo-icon">◈</span>
+            <h2>Safonee</h2>
+        </div>
+        <div class="user-actions">
+            <button class="icon-btn" onclick="window.location.href='index.html'">🚪 خروج</button>
+            <div class="avatar">أ</div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- المحتوى الرئيسي (المنشورات) -->
+        <main class="feed">
+            
+            <!-- صندوق إنشاء منشور -->
+            <div class="create-post">
+                <div class="avatar-small">أ</div>
+                <input type="text" id="postInput" placeholder="بماذا تفكر الآن؟">
+                <button class="btn-post" onclick="createPost()">نشر</button>
+            </div>
+
+            <!-- منشور تجريبي 1 -->
+            <article class="post">
+                <div class="post-header">
+                    <div class="avatar-small">س</div>
+                    <div class="post-info">
+                        <h4>سارة العلي</h4>
+                        <span>منذ ساعتين · 🌍</span>
+                    </div>
+                </div>
+                <p class="post-content">يوم رائع للتعلم واكتشاف أشياء جديدة في عالم البرمجة! 💻✨</p>
+                <div class="post-actions">
+                    <button onclick="toggleLike(this)">❤️ إعجاب</button>
+                    <button>💬 تعليق</button>
+                </div>
+            </article>
+
+        </main>
+    </div>
+
+    <!-- كود الجافاسكربت مدمج هنا لضمان عمله بدون مشاكل -->
+    <script>
+        // دالة إنشاء المنشور
+        function createPost() {
+            var input = document.getElementById('postInput');
+            var content = input.value.trim();
+            
+            if (content) {
+                var feed = document.querySelector('.feed');
+                var createPostBox = document.querySelector('.create-post');
+                
+                var newPost = document.createElement('article');
+                newPost.className = 'post';
+                newPost.innerHTML = `
+                    <div class="post-header">
+                        <div class="avatar-small">أ</div>
+                        <div class="post-info">
+                            <h4>أنت</h4>
+                            <span>الآن · 🌍</span>
+                        </div>
+                    </div>
+                    <p class="post-content">${content}</p>
+                    <div class="post-actions">
+                        <button onclick="toggleLike(this)">❤️ إعجاب</button>
+                        <button>💬 تعليق</button>
+                    </div>
+                `;
+                
+                // إضافة المنشور الجديد تحت صندوق الكتابة مباشرة
+                createPostBox.parentNode.insertBefore(newPost, createPostBox.nextSibling);
+                input.value = ''; // تفريغ الحقل
+            } else {
+                alert('اكتب شيئاً أولاً! ✍️');
+            }
+        }
+
+        // دالة تغيير لون زر الإعجاب
+        function toggleLike(btn) {
+            if (btn.style.background === 'rgb(99, 102, 241)') {
+                btn.style.background = '#f5f5f7';
+                btn.style.color = '#2d2d30';
+                btn.innerHTML = '❤️ إعجاب';
+            } else {
+                btn.style.background = '#6366f1';
+                btn.style.color = 'white';
+                btn.innerHTML = '❤️ أعجبني';
+            }
+        }
+    </script>
+</body><body class="home-page">
+    <script>
+        if (!sessionStorage.getItem('loggedIn')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</html>

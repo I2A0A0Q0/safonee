@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safonee - مرحباً بك</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="brand-section">
+            <div class="logo">
+                <span class="logo-icon">◈</span>
+                <h1>Safonee</h1>
+            </div>
+            <p class="tagline">تواصل، شارك، استكشف</p>
+            <p class="sub-tagline">منصة اجتماعية بتصميم مختلف</p>
+        </div>
+
+        <div class="login-card">
+            <h2>تسجيل الدخول</h2>
+            <div class="input-group">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="emailInput" placeholder="example@mail.com">
+            </div>
+            <div class="input-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="passwordInput" placeholder="••••••••">
+            </div>
+            <div class="options-row">
+                <label class="checkbox">
+                    <input type="checkbox"> تذكرني
+                </label>
+                <a href="#">نسيت كلمة المرور؟</a>
+            </div>
+            <button class="btn-primary" onclick="doLogin()">دخول</button>
+            <div class="divider"><span>أو</span></div>
+            <button class="btn-secondary" onclick="alert('قريباً!')">إنشاء حساب جديد</button>
+        </div>
+    </div>
+
+    <script>
+        function doLogin() {
+            var email = document.getElementById('emailInput').value;
+            var password = document.getElementById('passwordInput').value;
+            
+            if (email && password) {
+                sessionStorage.setItem('loggedIn', 'true');
+                window.location.href = 'home.html';
+            } else {
+                alert('الرجاء إدخال البريد وكلمة المرور');
+            }
+        }
+    </script>
+</body>
+</html>
