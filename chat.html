@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safonee - المحادثات</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="home-page">
+    <header class="top-bar">
+        <div class="logo-small" onclick="window.location.href='home.html'" style="cursor:pointer">
+            <span class="logo-icon">◈</span>
+            <h2>Safonee</h2>
+        </div>
+        <div class="user-actions">
+            <button class="icon-btn" onclick="window.location.href='home.html'">🏠</button>
+            <button class="icon-btn" onclick="window.location.href='profile.html'">👤</button>
+            <button class="icon-btn" onclick="toggleDarkMode()">🌙</button>
+            <div class="avatar">أ</div>
+        </div>
+    </header>
+
+    <div class="chat-container">
+        <!-- قائمة المحادثات -->
+        <div class="chat-list" id="chatList">
+            <h2>💬 المحادثات</h2>
+            <input type="text" class="chat-search" placeholder="🔍 ابحث عن محادثة...">
+            
+            <div class="chat-item" onclick="openChat('سارة العلي', 'س')">
+                <div class="avatar-small" style="background:#ff6b9d">س</div>
+                <div class="chat-info">
+                    <strong>سارة العلي</strong>
+                    <p>مرحباً! كيف حالك؟</p>
+                </div>
+                <span class="chat-time">2:30 م</span>
+            </div>
+
+            <div class="chat-item" onclick="openChat('محمد خالد', 'م')">
+                <div class="avatar-small" style="background:#4ecdc4">م</div>
+                <div class="chat-info">
+                    <strong>محمد خالد</strong>
+                    <p>هل شاهدت المنشور الجديد؟</p>
+                </div>
+                <span class="chat-time">1:15 م</span>
+            </div>
+
+            <div class="chat-item" onclick="openChat('ليلى حسن', 'ل')">
+                <div class="avatar-small" style="background:#ffd93d">ل</div>
+                <div class="chat-info">
+                    <strong>ليلى حسن</strong>
+                    <p>شكراً جزيلاً! 🙏</p>
+                </div>
+                <span class="chat-time">أمس</span>
+            </div>
+
+            <div class="chat-item" onclick="openChat('عمر يوسف', 'ع')">
+                <div class="avatar-small" style="background:#95e1d3">ع</div>
+                <div class="chat-info">
+                    <strong>عمر يوسف</strong>
+                    <p>إلى اللقاء 👋</p>
+                </div>
+                <span class="chat-time">أمس</span>
+            </div>
+        </div>
+
+        <!-- نافذة المحادثة -->
+        <div class="chat-window" id="chatWindow" style="display:none">
+            <div class="chat-header">
+                <button class="back-btn" onclick="closeChat()">→ رجوع</button>
+                <div class="avatar-small" id="chatAvatar">س</div>
+                <strong id="chatName">سارة العلي</strong>
+                <span class="online-dot"></span>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message received">
+                    <p>مرحباً! كيف حالك؟</p>
+                    <span class="msg-time">2:30 م</span>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="messageInput" placeholder="اكتب رسالة..." onkeypress="if(event.key==='Enter') sendMessage()">
+                <button class="send-btn" onclick="sendMessage()">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChat = null;
+
+        function openChat(name, initial) {
+            currentChat = name;
+            document.getElementById('chatName').textContent = name;
+            document.getElementById('chatAvatar').textContent = initial;
+            document.getElementById('chatWindow').style.display = 'flex';
+            document.getElementById('chatList').style.display = 'none';
+            loadMessages(name);
+        }
+
+        function closeChat() {
+            document.getElementById('chatWindow').style.display = 'none';
+            document.getElementById('chatList').style.display = 'block';
+            currentChat = null;
+        }
+
+        function sendMessage() {
+            var input = document.getElementById('messageInput');
+            var text = input.value.trim();
+            
+            if (text && currentChat) {
+                var messages = JSON.parse(localStorage.getItem('chat_' + currentChat) || '[]');
+                messages.push({
+                    text: text,
+                    sender: 'me',
+                    time: new Date().toLocaleTimeString('ar', {hour:'2-digit', minute:'2-digit'})
+                });
+                localStorage.setItem('chat_' + currentChat, JSON.stringify(messages));
+                
+                input.value = '';
+                loadMessages(currentChat);
+
+                // رد تلقائي بعد ثانية
+                setTimeout(function() {
+                    autoReply(currentChat);
+                }, 1000);
+            }
+        }
+
+        function autoReply(name) {
+            var replies = [
+                'ممتاز! 👍',
+                'فهمت عليك',
+                'حسناً، سأفكر في الأمر',
+                'شكراً لإخباري!',
+                'رائع جداً! 🎉',
+                'أتفق معك تماماً',
+                'سأرد عليك لاحقاً'
+            ];
+            var messages = JSON.parse(localStorage.getItem('chat_' + name) || '[]');
+            messages.push({
+                text: replies[Math.floor(Math.random() * replies.length)],
+                sender: 'them',
+                time: new Date().toLocaleTimeString('ar', {hour:'2-digit', minute:'2-digit'})
+            });
+            localStorage.setItem('chat_' + name, JSON.stringify(messages));
+            loadMessages(name);
+        }
+
+        function loadMessages(name) {
+            var messages = JSON.parse(localStorage.getItem('chat_' + name) || '[]');
+            var container = document.getElementById('chatMessages');
+            container.innerHTML = '';
+
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="empty-chat">ابدأ المحادثة! 👋</div>';
+                return;
+            }
+
+            messages.forEach(function(msg) {
+                var div = document.createElement('div');
+                div.className = 'message ' + (msg.sender === 'me' ? 'sent' : 'received');
+                div.innerHTML = `<p>${msg.text}</p><span class="msg-time">${msg.time}</span>`;
+                container.appendChild(div);
+            });
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+
+    <style>
+        .chat-container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 16px;
+            height: calc(100vh - 100px);
+            display: flex;
+            overflow: hidden;
+        }
+        .chat-list {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .chat-list h2 {
+            margin-bottom: 15px;
+        }
+        .chat-search {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e8e8ec;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-item:hover {
+            background: #f5f5f7;
+        }
+        .chat-info {
+            flex: 1;
+        }
+        .chat-info strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+        .chat-info p {
+            color: #888;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        .chat-time {
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+        .chat-window {
+            flex: 1;
+            flex-direction: column;
+            border-right: 1px solid #e8e8ec;
+        }
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #e8e8ec;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #6366f1;
+        }
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-right: auto;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            max-width: 70%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            position: relative;
+        }
+        .message.sent {
+            align-self: flex-start;
+            background: #6366f1;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.received {
+            align-self: flex-end;
+            background: #f5f5f7;
+            color: #2d2d30;
+            border-bottom-left-radius: 4px;
+        }
+        .message p {
+            margin: 0;
+        }
+        .msg-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            display: block;
+            margin-top: 4px;
+        }
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #e8e8ec;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input-area input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e8e8ec;
+            border-radius: 20px;
+            font-size: 0.95rem;
+        }
+        .send-btn {
+            padding: 12px 24px;
+            background: #6366f1;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .empty-chat {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            margin: auto;
+        }
+        @media (max-width: 768px) {
+            .chat-container {
+                margin: 0;
+                border-radius: 0;
+                height: calc(100vh - 70px);
+            }
+        }
+    </style>
+</body>
+</html>
